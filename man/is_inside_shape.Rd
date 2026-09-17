@@ -17,7 +17,7 @@
         \item{\code{"sphere"}: \code{list(r)} where \code{r} is the radius.}
         \item{\code{"ellipsoid"}: \code{list(a, b, c)} defining the semi-axes lengths.}
         \item{\code{"cylinder"}: \code{list(r, h)} tracking cross-section radius and total height.}
-        \item{\code{"egg"}: \code{list(a, b, c, k)} where \code{k} represents asymmetric scaling.}
+        \item{\code{"ovoid"}: \code{list(a, b, c, k)} where \code{k} represents asymmetric scaling.}
         \item{\code{"irregular"}: \code{list(base_r, amp1, freq1, amp2, freq2)} for surface ripples.}
         \item{\code{"laminar"}: \code{list(base_z, curve_amp, curve_freq, thickness)} for layered tracking.}
       }}
