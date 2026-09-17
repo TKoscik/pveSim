@@ -1,4 +1,4 @@
-# pveSim: MRI Partial Volume Error Simulator and Analysis Engine
+# pveSim: MRI Partial Volume Error Simulator
 
 `pveSim` is a lightweight, zero-dependency, base-R simulation package designed to quantify, model, and visualize the impact of **Partial Volume Effects (PVE)** and spatial alignment anomalies in 3D digital imaging, specifically tailored for Magnetic Resonance Imaging (MRI) contexts.
 
