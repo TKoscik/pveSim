@@ -36,14 +36,16 @@
 }
 \value{
   A standard named list containing the following quantitative experimental metrics:
-    \item{\code{true_volume}{The calculated baseline ground-truth continuous volume footprint.}
-    \item{\code{hard_volume}{The estimated volume calculated via traditional binary 50\% threshold segmentation.}
-    \item{\code{hard_error_pct}{The resulting percentage error under hard thresholding (positive values indicate overestimation, negative indicate underestimation).}
-    \item{\code{mixel_volume}{The estimated volume calculated using soft fractional un-mixing (The Linear Mixel Model).}
-    \item{\code{mixel_error_pct}{The resulting percentage error under soft fractional un-mixing.}
-    \item{\code{boundary_voxels_count}{The absolute number of voxels holding a blended tissue profile.}
-    \item{\code{contrast_to_noise_ratio}{The explicit Contrast-to-Noise Ratio (CNR) profile of the simulation run.}
-    \item{\code{voxel_dimensions}{A vector tracking the dimensions of the generated simulation grid array.}
+  \describe{
+    \item{\code{true_volume}}{The calculated baseline ground-truth continuous volume footprint.}
+    \item{\code{hard_volume}}{The estimated volume calculated via traditional binary 50\% threshold segmentation.}
+    \item{\code{hard_error_pct}}{The resulting percentage error under hard thresholding (positive values indicate overestimation, negative indicate underestimation).}
+    \item{\code{mixel_volume}}{The estimated volume calculated using soft fractional un-mixing (The Linear Mixel Model).}
+    \item{\code{mixel_error_pct}}{The resulting percentage error under soft fractional un-mixing.}
+    \item{\code{boundary_voxels_count}}{The absolute number of voxels holding a blended tissue profile.}
+    \item{\code{contrast_to_noise_ratio}}{The explicit Contrast-to-Noise Ratio (CNR) profile of the simulation run.}
+    \item{\code{voxel_dimensions}}{A vector tracking the dimensions of the generated simulation grid array.}
+  }
 }
 \description{
   Runs a comprehensive, multi-layered partial volume error simulation. The function maps
