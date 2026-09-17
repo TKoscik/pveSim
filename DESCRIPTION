@@ -8,7 +8,7 @@ Author: Tim Koscik, PhD <tkoscik@uams.edu>
 visualize, and quantify the directional biases and measurement errors 
 introduced by partial volume effects (PVE) across standard, irregular, 
 and laminar analytical structures under custom voxel anisotropy configurations.
-License: GPL-3
+License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.0
