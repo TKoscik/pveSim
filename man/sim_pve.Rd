@@ -14,25 +14,35 @@
   
   \item{params}{A named list containing the physical size parameters matching the chosen shape.}
   
-  \item{res_inplane}{A positive numeric value detailing the in-plane X and Y spatial resolution. Defaults to \code{1.0}.}
+  \item{res_inplane}{A positive numeric value detailing the in-plane X and Y spatial resolution.
+    Defaults to \code{1.0}.}
   
-  \item{res_z}{A positive numeric value detailing the slice thickness (Z resolution). Defaults to \code{3.0}.}
+  \item{res_z}{A positive numeric value detailing the slice thickness (Z resolution).
+    Defaults to \code{3.0}.}
   
-  \item{offset}{A numeric vector of length 3 detailing the sub-voxel \code{c(x, y, z)} translation displacement offsets. Defaults to \code{c(0, 0, 0)}.}
+  \item{offset}{A numeric vector of length 3 detailing the sub-voxel \code{c(x, y, z)} translation displacement offsets.
+    Defaults to \code{c(0, 0, 0)}.}
   
-  \item{rot_deg}{A numeric vector of length 3 detailing the roll, pitch, and yaw rotation angles in degrees. Defaults to \code{c(0, 0, 0)}.}
+  \item{rot_deg}{A numeric vector of length 3 detailing the roll, pitch, and yaw rotation angles in degrees.
+    Defaults to \code{c(0, 0, 0)}.}
   
-  \item{int_structure}{A numeric value defining the pure baseline MR signal intensity of the structure. Defaults to \code{100}.}
+  \item{int_structure}{A numeric value defining the pure baseline MR signal intensity of the structure.
+    Defaults to \code{100}.}
   
-  \item{int_background}{A numeric value defining the pure baseline MR signal intensity of the background tissue. Defaults to \code{50}.}
+  \item{int_background}{A numeric value defining the pure baseline MR signal intensity of the background tissue.
+    Defaults to \code{50}.}
   
-  \item{noise_sd}{A non-negative numeric value defining the standard deviation of the ambient Gaussian electronic/thermal MR noise. Defaults to \code{2.0}.}
+  \item{noise_sd}{A non-negative numeric value defining the standard deviation of the ambient Gaussian electronic/thermal MR noise.
+    Defaults to \code{2.0}.}
   
-  \item{subsamples}{An integer value controlling the supersampling resolution (subdivisions per voxel axis) used for numerical fractional integration. Total sub-voxels evaluated per voxel is \code{subsamples^3}. Defaults to \code{4}.}
+  \item{subsamples}{An integer value controlling the supersampling resolution (subdivisions per voxel axis) used for numerical fractional integration. Total sub-voxels evaluated per voxel is \code{subsamples^3}.
+    Defaults to \code{4}.}
   
-  \item{generate_plots}{A logical flag to manually trigger PNG slice generation through the spatial center of the voxel matrix array. Defaults to \code{FALSE}.}
+  \item{generate_plots}{A logical flag to manually trigger PNG slice generation through the spatial center of the voxel matrix array.
+    Defaults to \code{FALSE}.}
   
-  \item{plot_filename A character string specifying the file pathway where the diagnostic cross-section PNG layout should be exported if \code{generate_plots = TRUE}. Defaults to \code{"mri_slice_output.png"}.}
+  \item{plot_filename A character string specifying the file pathway where the diagnostic cross-section PNG layout should be exported if \code{generate_plots = TRUE}.
+    Defaults to \code{"mri_slice_output.png"}.}
 }
 \value{
   A standard named list containing the following quantitative experimental metrics:
