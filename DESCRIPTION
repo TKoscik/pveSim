@@ -5,9 +5,9 @@ Version: 0.1.0
 Author: Tim Koscik, PhD <tkoscik@uams.edu>
   Maintainer: Tim Koscik, PhD <tkoscik@uams.edu>
   Description: A high-utility, standalone framework designed to simulate, 
-visualize, and quantify the directional biases and measurement errors 
-introduced by partial volume effects (PVE) across standard, irregular, 
-and laminar analytical structures under custom voxel anisotropy configurations.
+    visualize, and quantify the directional biases and measurement errors 
+    introduced by partial volume effects (PVE) across standard, irregular, 
+    and laminar analytical structures under custom voxel anisotropy configurations.
 License: MIT
 Encoding: UTF-8
 LazyData: true
