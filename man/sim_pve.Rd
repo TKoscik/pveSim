@@ -41,7 +41,7 @@
   \item{generate_plots}{A logical flag to manually trigger PNG slice generation through the spatial center of the voxel matrix array.
     Defaults to \code{FALSE}.}
   
-  \item{plot_filename A character string specifying the file pathway where the diagnostic cross-section PNG layout should be exported if \code{generate_plots = TRUE}.
+  \item{plot_filename}{A character string specifying the file pathway where the diagnostic cross-section PNG layout should be exported if \code{generate_plots = TRUE}.
     Defaults to \code{"mri_slice_output.png"}.}
 }
 \value{
