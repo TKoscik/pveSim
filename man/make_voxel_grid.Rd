@@ -19,11 +19,13 @@
 }
 \value{
   A standard named list containing the following geometric elements:
-    \key{x}{A numeric vector containing the midpoint coordinates along the X axis.}
-  \key{y}{A numeric vector containing the midpoint coordinates along the Y axis.}
-  \key{z}{A numeric vector containing the midpoint coordinates along the Z axis.}
-  \key{voxel_vol}{The calculated single-voxel physical volume (\code{res_x * res_y * res_z}).}
-  \key{res}{A numeric vector of length 3 tracking the spatial resolutions used (\code{c(res_x, res_y, res_z)}).}
+  \describe{
+    \item{\code{x}}{A numeric vector containing the midpoint coordinates along the X axis.}
+    \item{\code{y}}{A numeric vector containing the midpoint coordinates along the Y axis.}
+    \item{\code{z}}{A numeric vector containing the midpoint coordinates along the Z axis.}
+    \item{\code{voxel_vol}}{The calculated single-voxel physical volume (\code{res_x * res_y * res_z}).}
+    \item{\code{res}}{A numeric vector of length 3 tracking the spatial resolutions used (\code{c(res_x, res_y, res_z)}).}
+  }
 }
 \description{
   Generates an structured, zero-centered 3D grid array containing coordinates
