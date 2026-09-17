@@ -214,25 +214,28 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
     
     # Plot Axial base view + Ground Truth contour
     image(grid$x, grid$y, axial_slice, col = gray_palette, 
-          main = paste("Axial Slice (Z =", round(fixed_z, 1), ")"),
-          xlab = "X Dimension", ylab = "Y Dimension", asp = 1)
+          main = paste("Axial (Z =", round(fixed_z, 1), ")"),
+          xlab = "X", ylab = "Y",
+          axes=FALSE, frame.plot = FALSE, asp = 1)
     contour(x_dense, y_dense, axial_contour_mask,
-            levels = 0.5,col = "cyan", lty = 3, lwd = 2.5,
+            levels = 0.5,col = "darkred", lty = 3, lwd = 2.5,
             add = TRUE, drawlabels = FALSE)
     
     # Plot Coronal base view + Ground Truth contour
     image(grid$x, grid$z, coronal_slice, col = gray_palette,
-          main = paste("Coronal Slice (Y =", round(fixed_y, 1), ")"),
-          xlab = "X Dimension", ylab = "Z Slice Axis", asp = 1)
+          main = paste("Coronal (Y =", round(fixed_y, 1), ")"),
+          xlab = "X", ylab = "Z",
+          axes=FALSE, frame.plot = FALSE, asp = 1)
     contour(x_dense, z_dense, coronal_contour_mask, levels = 0.5,
-            col = "cyan", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
+            col = "darkred", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
     
     # Plot Sagittal base view + Ground Truth contour
     image(grid$y, grid$z, sagittal_slice, col = gray_palette,
-          main = paste("Sagittal Slice (X =", round(fixed_x, 1), ")"),
-          xlab = "Y Dimension", ylab = "Z Slice Axis", asp = 1)
+          main = paste("Sagittal (X =", round(fixed_x, 1), ")"),
+          xlab = "Y", ylab = "Z",
+          axes=FALSE, frame.plot = FALSE, asp = 1)
     contour(y_dense, z_dense, sagittal_contour_mask, levels = 0.5,
-            col = "cyan", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
+            col = "darkred", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
     
     dev.off()
   }
