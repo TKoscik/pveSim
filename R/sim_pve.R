@@ -5,6 +5,8 @@
 #' continuous 3D geometries onto a discrete, customizable, anisotropic voxel grid, calculates 
 #' mixed-tissue signal intensities based on structural and background contrast, layers on thermal 
 #' MR noise, and returns both binary thresholded and linear mixel model volume measurements.
+#' If requested, it outputs 3-plane cross-sectional slices through the grid center overlaid with 
+#' a contrasting dotted contour indicating the analytical ground-truth shape boundary.
 #'
 #' @param shape A character string defining the target structure. Must be one of 
 #'   \code{"sphere"}, \code{"ellipsoid"}, \code{"cylinder"}, \code{"egg"}, 
@@ -33,30 +35,9 @@
 #'   cross-section PNG layout should be exported if \code{generate_plots = TRUE}. 
 #'   Defaults to \code{"mri_slice_output.png"}.
 #'
-#' @return A standard named list containing the following quantitative experimental metrics:
-#' \describe{
-#'   \item{\code{true_volume}}{The calculated baseline ground-truth continuous volume footprint.}
-#'   \item{\code{hard_volume}}{The estimated volume calculated via traditional binary 50\% threshold segmentation.}
-#'   \item{\code{hard_error_pct}}{The resulting percentage error under hard thresholding (positive values indicate overestimation, negative indicate underestimation).}
-#'   \item{\code{mixel_volume}}{The estimated volume calculated using soft fractional un-mixing (The Linear Mixel Model).}
-#'   \item{\code{mixel_error_pct}}{The resulting percentage error under soft fractional un-mixing.}
-#'   \item{\code{boundary_voxels_count}}{The absolute number of voxels holding a blended tissue profile.}
-#'   \item{\code{contrast_to_noise_ratio}}{The explicit Contrast-to-Noise Ratio (CNR) profile of the simulation run.}
-#'   \item{\code{voxel_dimensions}}{A vector tracking the dimensions of the generated simulation grid array.}
-#' }
+#' @return A standard named list containing quantitative experimental metrics.
 #' 
 #' @export
-#'
-#' @examples
-#' # Simulate an anisotropic acquisition of an ellipsoid structure with a 15-degree tilt
-#' my_sim <- sim_pve(
-#'   shape = "ellipsoid", 
-#'   params = list(a = 5.0, b = 3.5, c = 2.5),
-#'   res_inplane = 1.0, res_z = 2.5,
-#'   rot_deg = c(15, 0, 0),
-#'   generate_plots = FALSE
-#' )
-#' print(my_sim$hard_error_pct)
 sim_pve <- function(shape = "sphere", params = list(r = 4.0), 
                     res_inplane = 1.0, res_z = 3.0, 
                     offset = c(0.0, 0.0, 0.0), rot_deg = c(0.0, 0.0, 0.0),
@@ -102,7 +83,6 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
       for (k in seq_len(grid_span)) {
         v_center <- c(grid$x[i], grid$y[j], grid$z[k])
         
-        # Build evaluation blocks for continuous matrix checks
         pts <- matrix(rep(v_center, each = n_sub), ncol = 3) + sub_grid_matrix
         pts_transformed <- matrix(c(pts[,1] - offset[1], 
                                     pts[,2] - offset[2], 
@@ -142,7 +122,7 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   boundary_voxels <- sum(voxel_occupancy > 0.0 & voxel_occupancy < 1.0)
   cnr <- abs(int_structure - int_background) / max(0.0001, noise_sd)
   
-  # 7. Render 3-Plane Slice Imagery (PNG)
+  # 7. Render 3-Plane Slice Imagery with Analytical Ground-Truth Overlay
   if (generate_plots) {
     mid_idx <- round(grid_span / 2)
     axial_slice    <- voxel_intensity_observed[, , mid_idx]
@@ -151,33 +131,79 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
     
     gray_palette <- gray.colors(256, start = 0, end = 1)
     
-    png(filename = plot_filename, width = 1200, height = 400, res = 100)
+    # Establish high-resolution evaluation grids specifically for clean contours
+    contour_res <- 200
+    x_dense <- seq(min(grid$x), max(grid$x), length.out = contour_res)
+    y_dense <- seq(min(grid$y), max(grid$y), length.out = contour_res)
+    z_dense <- seq(min(grid$z), max(grid$z), length.out = contour_res)
+    
+    # Calculate fixed center point slices based on current run parameters
+    fixed_x <- grid$x[mid_idx]
+    fixed_y <- grid$y[mid_idx]
+    fixed_z <- grid$z[mid_idx]
+    
+    # 7a. Axial Analytical Contour Matrix
+    axial_dense_grid <- expand.grid(X = x_dense, Y = y_dense)
+    axial_pts <- matrix(c(axial_dense_grid$X - offset[1], 
+                          axial_dense_grid$Y - offset[2], 
+                          rep(fixed_z, nrow(axial_dense_grid)) - offset[3]), ncol = 3)
+    axial_pts_mapped <- rotate_coords(axial_pts, -rot_rad[1], -rot_rad[2], -rot_rad[3])
+    axial_contour_mask <- matrix(is_inside_shape(axial_pts_mapped, shape, params), 
+                                 nrow = contour_res, ncol = contour_res)
+    
+    # 7b. Coronal Analytical Contour Matrix
+    coronal_dense_grid <- expand.grid(X = x_dense, Z = z_dense)
+    coronal_pts <- matrix(c(coronal_dense_grid$X - offset[1], 
+                            rep(fixed_y, nrow(coronal_dense_grid)) - offset[2], 
+                            coronal_dense_grid$Z - offset[3]), ncol = 3)
+    coronal_pts_mapped <- rotate_coords(coronal_pts, -rot_rad[1], -rot_rad[2], -rot_rad[3])
+    coronal_contour_mask <- matrix(is_inside_shape(coronal_pts_mapped, shape, params), 
+                                   nrow = contour_res, ncol = contour_res)
+    
+    # 7c. Sagittal Analytical Contour Matrix
+    sagittal_dense_grid <- expand.grid(Y = y_dense, Z = z_dense)
+    sagittal_pts <- matrix(c(rep(fixed_x, nrow(sagittal_dense_grid)) - offset[1], 
+                             sagittal_dense_grid$Y - offset[2], 
+                             sagittal_dense_grid$Z - offset[3]), ncol = 3)
+    sagittal_pts_mapped <- rotate_coords(sagittal_pts, -rot_rad[1], -rot_rad[2], -rot_rad[3])
+    sagittal_contour_mask <- matrix(is_inside_shape(sagittal_pts_mapped, shape, params), 
+                                    nrow = contour_res, ncol = contour_res)
+    
+    # Open File Device and Plot Images with Layered Contours
+    png(filename = plot_filename, width = 1250, height = 420, res = 110)
     par(mfrow = c(1, 3), mar = c(4, 4, 3, 1))
     
+    # Plot Axial base view + Ground Truth contour
     image(grid$x, grid$y, axial_slice, col = gray_palette, 
-          main = paste("Axial Slice (Z =", round(grid$z[mid_idx], 1), ")"),
+          main = paste("Axial Slice (Z =", round(fixed_z, 1), ")"),
           xlab = "X Dimension", ylab = "Y Dimension", asp = 1)
+    contour(x_dense, y_dense, axial_contour_mask,
+            levels = 0.5,col = "cyan", lty = 3, lwd = 2.5,
+            add = TRUE, drawlabels = FALSE)
     
-    image(grid$x, grid$z, coronal_slice, col = gray_palette, 
-          main = paste("Coronal Slice (Y =", round(grid$y[mid_idx], 1), ")"),
+    # Plot Coronal base view + Ground Truth contour
+    image(grid$x, grid$z, coronal_slice, col = gray_palette,
+          main = paste("Coronal Slice (Y =", round(fixed_y, 1), ")"),
           xlab = "X Dimension", ylab = "Z Slice Axis", asp = 1)
+    contour(x_dense, z_dense, coronal_contour_mask, levels = 0.5,
+            col = "cyan", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
     
-    image(grid$y, grid$z, sagittal_slice, col = gray_palette, 
-          main = paste("Sagittal Slice (X =", round(grid$x[mid_idx], 1), ")"),
+    # Plot Sagittal base view + Ground Truth contour
+    image(grid$y, grid$z, sagittal_slice, col = gray_palette,
+          main = paste("Sagittal Slice (X =", round(fixed_x, 1), ")"),
           xlab = "Y Dimension", ylab = "Z Slice Axis", asp = 1)
+    contour(y_dense, z_dense, sagittal_contour_mask, levels = 0.5,
+            col = "cyan", lty = 3, lwd = 2.5, add = TRUE, drawlabels = FALSE)
     
     dev.off()
   }
-  
   # Return data block
-  list(
-    true_volume             = v_true,
-    hard_volume             = v_hard,
-    hard_error_pct          = err_hard,
-    mixel_volume            = v_mixel,
-    mixel_error_pct         = err_mixel,
-    boundary_voxels_count   = boundary_voxels,
-    contrast_to_noise_ratio = cnr,
-    voxel_dimensions        = grid_dim
-  )
+  list(true_volume             = v_true,
+       hard_volume             = v_hard,
+       hard_error_pct          = err_hard,
+       mixel_volume            = v_mixel,
+       mixel_error_pct         = err_mixel,
+       boundary_voxels_count   = boundary_voxels,
+       contrast_to_noise_ratio = cnr,
+       voxel_dimensions        = grid_dim)
 }
