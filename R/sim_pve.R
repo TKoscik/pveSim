@@ -9,7 +9,7 @@
 #' a contrasting dotted contour indicating the analytical ground-truth shape boundary.
 #'
 #' @param shape A character string defining the target structure. Must be one of 
-#'   \code{"sphere"}, \code{"ellipsoid"}, \code{"cylinder"}, \code{"egg"}, 
+#'   \code{"sphere"}, \code{"ellipsoid"}, \code{"cylinder"}, \code{"ovoid"}, 
 #'   \code{"irregular"}, or \code{"laminar"}.
 #' @param params A named list containing the physical size parameters matching the chosen shape.
 #' @param res_inplane A positive numeric value detailing the in-plane X and Y spatial resolution. 
@@ -57,7 +57,7 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   if (shape == "sphere") { max_dim <- params$r
   } else if (shape == "ellipsoid") { max_dim <- max(params$a, params$b, params$c)
   } else if (shape == "cylinder") { max_dim <- max(params$r, params$h/2)
-  } else if (shape == "egg") { max_dim <- max(params$a, params$b, params$c)
+  } else if (shape == "ovoid") { max_dim <- max(params$a, params$b, params$c)
   } else if (shape == "irregular") { max_dim <- params$base_r + params$amp1 + params$amp2
   } else if (shape == "laminar") { max_dim <- max(c(params$thickness, params$curve_amp * 2)) 
   } else { stop("Unknown shape designated.") }
