@@ -25,7 +25,7 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 }
 
 # Install pveSim from GitHub
-remotes::install_github("YOUR_GITHUB_USERNAME/pveSim")
+remotes::install_github("TKoscik/pveSim")
 ```
 
 ---
