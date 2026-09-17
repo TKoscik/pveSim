@@ -16,7 +16,7 @@
 #'     \item{\code{"sphere"}: \code{list(r)} where \code{r} is the radius.}
 #'     \item{\code{"ellipsoid"}: \code{list(a, b, c)} defining the semi-axes lengths.}
 #'     \item{\code{"cylinder"}: \code{list(r, h)} tracking cross-section radius and total height.}
-#'     \item{\code{"egg"}: \code{list(a, b, c, k)} where \code{k} represents asymmetric scaling.}
+#'     \item{\code{"ovoid"}: \code{list(a, b, c, k)} where \code{k} represents asymmetric scaling.}
 #'     \item{\code{"irregular"}: \code{list(base_r, amp1, freq1, amp2, freq2)} for surface ripples.}
 #'     \item{\code{"laminar"}: \code{list(base_z, curve_amp, curve_freq, thickness)} for layered tracking.}
 #'   }
@@ -47,7 +47,7 @@ is_inside_shape <- function(coords, shape, params) {
     return(logical(0))
   }
   
-  valid_shapes <- c("sphere", "ellipsoid", "cylinder", "egg", "irregular", "laminar")
+  valid_shapes <- c("sphere", "ellipsoid", "cylinder", "ovoid", "irregular", "laminar")
   if (!(shape %in% valid_shapes)) {
     stop(paste("Shape profile must be one of:", paste(valid_shapes, collapse = ", ")))
   }
@@ -78,7 +78,7 @@ is_inside_shape <- function(coords, shape, params) {
     }
     return((x^2 + y^2 <= params$r^2) & (abs(z) <= (params$h / 2)))
     
-  } else if (shape == "egg") {
+  } else if (shape == "ovoid") {
     if (any(c(is.null(params$a), is.null(params$b), is.null(params$c), is.null(params$k))) ||
         any(c(params$a, params$b, params$c) <= 0)) {
       stop("Egg parameters 'a', 'b', and 'c' must be positive numeric values.")
