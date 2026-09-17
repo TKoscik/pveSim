@@ -11,7 +11,46 @@
 #' @param shape A character string defining the target structure. Must be one of 
 #'   \code{"sphere"}, \code{"ellipsoid"}, \code{"cylinder"}, \code{"ovoid"}, 
 #'   \code{"irregular"}, or \code{"laminar"}.
-#' @param params A named list containing the physical size parameters matching the chosen shape.
+#' @param params A named list containing the physical size parameters matching the chosen shape:
+#'   \itemize{
+#'     \item{\code{"sphere"}: \code{list(r)}
+#'       \itemize{
+#'         \item{\code{r}: Positive numeric value detailing the absolute radius of the sphere in voxel units.}
+#'       }}
+#'     \item{\code{"ellipsoid"}: \code{list(a, b, c)}
+#'       \itemize{
+#'         \item{\code{a}: Semi-major axis length along the X direction (in voxel units).}
+#'         \item{\code{b}: Semi-minor axis length along the Y direction (in voxel units).}
+#'         \item{\code{c}: Semi-minor axis length along the Z direction (in voxel units).}
+#'       }}
+#'     \item{\code{"cylinder"}: \code{list(r, h)}
+#'       \itemize{
+#'         \item{\code{r}: Cross-sectional radius of the cylinder base (in voxel units).}
+#'         \item{\code{h}: Total longitudinal height/length of the cylinder barrel (in voxel units).}
+#'       }}
+#'     \item{\code{"ovoid"}: \code{list(a, b, c, k)}
+#'       \itemize{
+#'         \item{\code{a}: Base semi-axis scaling dimension along the X direction.}
+#'         \item{\code{b}: Base semi-axis scaling dimension along the Y direction.}
+#'         \item{\code{c}: Base semi-axis scaling dimension along the Z direction.}
+#'         \item{\code{k}: Asymmetry scaling parameter. Values greater than 0 pinch one structural pole along the Z-axis while inflating the opposite pole to create a realistic egg/ovoid taper.}
+#'       }}
+#'     \item{\code{"irregular"}: \code{list(base_r, amp1, freq1, amp2, freq2)}
+#'       \itemize{
+#'         \item{\code{base_r}: Core underlying radius of the baseline unperturbed sphere.}
+#'         \item{\code{amp1}: Physical amplitude (maximum height/depth in voxel units) of primary surface undulations.}
+#'         \item{\code{freq1}: Spatial frequency (number of wave cycles per sphere sweep) of primary surface undulations.}
+#'         \item{\code{amp2}: Physical amplitude of secondary overlapping surface textures.}
+#'         \item{\code{freq2}: Spatial frequency of secondary overlapping surface textures.}
+#'       }}
+#'     \item{\code{"laminar"}: \code{list(base_z, curve_amp, curve_freq, thickness)}
+#'       \itemize{
+#'         \item{\code{base_z}: Absolute central vertical anchor plane elevation along the Z-axis.}
+#'         \item{\code{curve_amp}: Maximum peak-to-trough amplitude height of folding sheet waves.}
+#'         \item{\code{curve_freq}: Density or spatial frequency of folding sheet waves (higher values resemble highly gyrified cortical folds).}
+#'         \item{\code{thickness}: Absolute continuous width/thickness of the tissue ribbon sheet layer (in voxel units).}
+#'       }}
+#'   }
 #' @param res_inplane A positive numeric value detailing the in-plane X and Y spatial resolution. 
 #'   Defaults to \code{1.0}.
 #' @param res_z A positive numeric value detailing the slice thickness (Z resolution). 
