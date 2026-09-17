@@ -12,7 +12,14 @@
     \code{"sphere"}, \code{"ellipsoid"}, \code{"cylinder"}, \code{"egg"},
     \code{"irregular"}, or \code{"laminar"}.}
   
-  \item{params}{A named list containing the physical size parameters matching the chosen shape.}
+  \item{params}{A named list containing the physical size parameters matching the chosen shape:
+    \itemize{
+      \item{\code{"sphere"}: \code{list(r)} where \code{r} is the absolute radius of the sphere in voxel units.}
+      \item{\code{"ellipsoid"}: \code{list(a, b, c)} where \code{a}, \code{b}, and \code{c} represent lengths of the semi-axes along the X, Y, and Z axes respectively.}
+      \item{\code{"cylinder"}: \code{list(r, h)} where \code{r} is the baseline cross-sectional radius and \code{h} is the total height of the cylinder barrel.}
+      \item{\code{"ovoid"}: \code{list(a, b, c, k)} where \code{a}, \code{b}, and \code{c} are baseline scaling axes and \code{k} is an asymmetry factor altering the taper profile of the poles along the Z axis.}
+      \item{\code{"irregular"}: \code{list(base_r, amp1, freq1, amp2, freq2)} where \code{base_r} is the baseline core sphere radius, \code{amp1}/\code{freq1} control broad surface deviations, and \code{amp2}/\code{freq2} add independent micro-textures.}
+      \item{\code{"laminar"}: \code{list(base_z, curve_amp, curve_freq, thickness)} where \code{base_z} is the center elevation height, \code{curve_amp}/\code{curve_freq} dictate ribbon wave geometry, and \code{thickness} defines absolute tissue thickness width.}}}
   
   \item{res_inplane}{A positive numeric value detailing the in-plane X and Y spatial resolution.
     Defaults to \code{1.0}.}
