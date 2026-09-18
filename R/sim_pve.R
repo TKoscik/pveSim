@@ -209,11 +209,13 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
                                     nrow = contour_res, ncol = contour_res)
     
     # Open File Device and Plot Images with Layered Contours
+    absolute_intensity_range <- c(0, 255)
     png(filename = plot_filename, width = 1250, height = 420, res = 110)
     par(mfrow = c(1, 3), mar = c(4, 4, 3, 1))
     
     # Plot Axial base view + Ground Truth contour
-    image(grid$x, grid$y, axial_slice, col = gray_palette, 
+    image(grid$x, grid$y, axial_slice, col = gray_palette,
+          zlim = absolute_intensity_range,
           main = paste("Axial (Z =", round(fixed_z, 1), ")"),
           xlab = "X", ylab = "Y",
           axes=FALSE, frame.plot = FALSE, asp = 1)
@@ -223,6 +225,7 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
     
     # Plot Coronal base view + Ground Truth contour
     image(grid$x, grid$z, coronal_slice, col = gray_palette,
+          zlim = absolute_intensity_range,
           main = paste("Coronal (Y =", round(fixed_y, 1), ")"),
           xlab = "X", ylab = "Z",
           axes=FALSE, frame.plot = FALSE, asp = 1)
@@ -231,6 +234,7 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
     
     # Plot Sagittal base view + Ground Truth contour
     image(grid$y, grid$z, sagittal_slice, col = gray_palette,
+          zlim = absolute_intensity_range,
           main = paste("Sagittal (X =", round(fixed_x, 1), ")"),
           xlab = "Y", ylab = "Z",
           axes=FALSE, frame.plot = FALSE, asp = 1)
