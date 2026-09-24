@@ -93,17 +93,27 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   
   # 2. Derive Dynamic Bounding Box Dimensions
   buffer <- max(c(res_inplane, res_z)) * 4
-  if (shape == "sphere") { max_dim <- params$r
-  } else if (shape == "ellipsoid") { max_dim <- max(params$a, params$b, params$c)
-  } else if (shape == "cylinder") { max_dim <- max(params$r, params$h/2)
-  } else if (shape == "ovoid") { max_dim <- max(params$a, params$b, params$c)
-  } else if (shape == "irregular") { max_dim <- params$base_r + params$amp1 + params$amp2
-  } else if (shape == "laminar") { max_dim <- max(c(params$thickness, params$curve_amp * 2)) 
+  if (shape == "sphere") { max_dim <- params$r * 2
+  } else if (shape == "ellipsoid") { max_dim <- max(params$a, params$b, params$c) * 2
+  } else if (shape == "cylinder") { max_dim <- sqrt((2 * params$r)^2 + (params$h)^2)
+  } else if (shape == "ovoid") { max_dim <- max(params$a, params$b, params$c) * 2
+  } else if (shape == "irregular") { max_dim <- (params$base_r + params$amp1 + params$amp2) * 2
+  } else if (shape == "laminar") { max_dim <- max(c(params$thickness, params$curve_amp * 2)) * 2
   } else { stop("Unknown shape designated.") }
-  
-  grid_span <- as.integer(ceiling((max_dim * 2 + buffer) / min(res_inplane, res_z)))
-  grid <- make_voxel_grid(grid_span, res_inplane, res_inplane, res_z)
+
+  # Account for sub-voxel translation offsets shifting the shape out of center
+  max_offset_shift <- max(abs(offset))
+  # Compute total uniform cubic grid span required to hold the rotated/shifted shape
+  total_needed_space <- max_dim + (2 * max_offset_shift) + buffer
+  grid_span <- as.integer(ceiling(total_needed_space / min(res_inplane, res_z)))
+  # Enforce an odd number so the voxel grid centers perfectly on (0,0,0)
+  if (grid_span %% 2 == 0) grid_span <- grid_span + 1
+    grid <- make_voxel_grid(grid_span, res_inplane, res_inplane, res_z)
   grid_dim <- c(grid_span, grid_span, grid_span)
+  
+  #grid_span <- as.integer(ceiling((max_dim * 2 + buffer) / min(res_inplane, res_z)))
+  #grid <- make_voxel_grid(grid_span, res_inplane, res_inplane, res_z)
+  #grid_dim <- c(grid_span, grid_span, grid_span)
   
   # 3. Setup Numeric Supersampling Map
   rot_rad <- rot_deg * pi / 180
