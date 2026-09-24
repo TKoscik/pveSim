@@ -107,8 +107,8 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   total_needed_space <- max_dim + (2 * max_offset_shift) + buffer
   grid_span <- as.integer(ceiling(total_needed_space / min(res_inplane, res_z)))
   # Enforce an odd number so the voxel grid centers perfectly on (0,0,0)
-  if (grid_span %% 2 == 0) grid_span <- grid_span + 1
-    grid <- make_voxel_grid(grid_span, res_inplane, res_inplane, res_z)
+  if (grid_span %% 2 == 0) { grid_span <- grid_span + 1 }
+  grid <- make_voxel_grid(grid_span, res_inplane, res_inplane, res_z)
   grid_dim <- c(grid_span, grid_span, grid_span)
   
   #grid_span <- as.integer(ceiling((max_dim * 2 + buffer) / min(res_inplane, res_z)))
@@ -153,12 +153,22 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   voxel_intensity_observed <- voxel_intensity_pure + noise_matrix
   
   # 6. Extraction Segmentations
+  #segmentation_threshold <- (int_structure + int_background) / 2
+  #if (int_structure > int_background) {
+  #  hard_segmentation <- voxel_intensity_observed >= segmentation_threshold
+  #} else {
+  #  hard_segmentation <- voxel_intensity_observed <= segmentation_threshold
+  #}
+  #v_hard <- sum(hard_segmentation) * grid$voxel_vol
+  #err_hard <- ((v_hard - v_true) / v_true) * 100
+  
+  # Unbiased Hard Segmentation mapping to eliminate anisotropic threshold plateaus
   segmentation_threshold <- (int_structure + int_background) / 2
-  if (int_structure > int_background) {
-    hard_segmentation <- voxel_intensity_observed >= segmentation_threshold
-  } else {
-    hard_segmentation <- voxel_intensity_observed <= segmentation_threshold
-  }
+  # Calculate the raw distance from background normalized by the contrast gap
+  scaled_intensity <- (voxel_intensity_observed - int_background) / (int_structure - int_background)
+  # Create an unbiased hard segmentation mask 
+  # (Values above 0.5 round up, values below round down)
+  hard_segmentation <- scaled_intensity >= 0.5
   v_hard <- sum(hard_segmentation) * grid$voxel_vol
   err_hard <- ((v_hard - v_true) / v_true) * 100
   
