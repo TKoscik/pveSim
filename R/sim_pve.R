@@ -182,55 +182,64 @@ sim_pve <- function(shape = "sphere",
   err_mixel <- ((v_mixel - v_true) / v_true) * 100
 
   # =========================================================================
-  # STEP 6: Multi-Stage Diagnostic Plots (Explicit 4-Panel Grid Positioning)
+  # STEP 6: Multi-Stage Diagnostic Plots (4 Rows x 3 Planes Layout)
   # =========================================================================
   if (generate_plots) {
+    # Central slice indices
     mid_c <- round(n_canon / 2)
     mid_v <- round(n_vox / 2)
-
-    # 1. Slice matrix extraction & transposition for R image orientation
-    s1 <- t(canonical_mask[, , mid_c])
-    s2 <- t(initial_prior_mask[, , mid_v[3]])
-    s3 <- t(voxel_intensity_observed[, , mid_v[3]])
-    s4 <- t(adapted_mask[, , mid_v[3]])
-
+    
     gray_pal <- gray.colors(256, start = 0, end = 1)
 
-    # 2. Open PNG device with 4:1 widescreen aspect ratio (2200 x 600 px)
-    png(filename = plot_filename, width = 2200, height = 600, res = 110)
-
-    # 3. Define explicit normalized device coordinate (NDC) bounding boxes for each panel
-    # Format: c(x_left, x_right, y_bottom, y_top) in [0, 1] range
-    panels <- list(
-      panel1 = c(0.00, 0.25, 0.0, 1.0),
-      panel2 = c(0.25, 0.50, 0.0, 1.0),
-      panel3 = c(0.50, 0.75, 0.0, 1.0),
-      panel4 = c(0.75, 1.00, 0.0, 1.0)
-    )
-
-    # --- PANEL 1: Canonical High-Res ---
-    par(fig = panels$panel1, mar = c(4.5, 4.5, 3.5, 1.5), new = FALSE)
-    image(canon_coords, canon_coords, s1, col = gray_pal,
-          main = "1. Canonical High-Res (0/1)", xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
-
-    # --- PANEL 2: Resampled Prior Mask ---
-    par(fig = panels$panel2, mar = c(4.5, 4.5, 3.5, 1.5), new = TRUE)
-    image(x_vox, y_vox, s2, col = gray_pal,
-          main = "2. Resampled Prior Mask", xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
-
-    # --- PANEL 3: Observed Intensity + Noise ---
-    par(fig = panels$panel3, mar = c(4.5, 4.5, 3.5, 1.5), new = TRUE)
-    image(x_vox, y_vox, s3, col = gray_pal,
-          main = "3. Intensity + Thermal Noise", xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
-
-    # --- PANEL 4: Adapted Boundary Overlay ---
-    par(fig = panels$panel4, mar = c(4.5, 4.5, 3.5, 1.5), new = TRUE)
-    image(x_vox, y_vox, s3, col = gray_pal,
-          main = "4. Adapted Boundary Mask", xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
+    # 1200 x 1600 Canvas: 4 Rows (Stages) x 3 Columns (Axial, Coronal, Sagittal)
+    png(filename = plot_filename, width = 1200, height = 1600, res = 110)
     
-    # Overlay contour strictly within Panel 4 viewport
-    contour(x_vox, y_vox, s4, levels = 0.5,
-            col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
+    # 4 rows, 3 columns layout matrix
+    layout(matrix(1:12, nrow = 4, ncol = 3, byrow = TRUE))
+    par(mar = c(3.5, 3.5, 2.5, 1.0), xaxs = "i", yaxs = "i")
+
+    # Helper function to render a single 3-plane row for a given 3D matrix
+    render_stage_row <- function(vol_data, x_coords, y_coords, z_coords, stage_title, overlay_mask = NULL) {
+      mid_x <- round(length(x_coords) / 2)
+      mid_y <- round(length(y_coords) / 2)
+      mid_z <- round(length(z_coords) / 2)
+
+      # Axial plane (X vs Y)
+      axial <- t(vol_data[, , mid_z])
+      image(x_coords, y_coords, axial, col = gray_pal,
+            main = paste(stage_title, "- Axial"), xlab = "X (mm)", ylab = "Y (mm)")
+      if (!is.null(overlay_mask)) {
+        contour(x_coords, y_coords, t(overlay_mask[, , mid_z]), levels = 0.5,
+                col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
+      }
+
+      # Coronal plane (X vs Z)
+      coronal <- t(vol_data[, mid_y, ])
+      image(x_coords, z_coords, coronal, col = gray_pal,
+            main = paste(stage_title, "- Coronal"), xlab = "X (mm)", ylab = "Z (mm)")
+      if (!is.null(overlay_mask)) {
+        contour(x_coords, z_coords, t(overlay_mask[, mid_y, ]), levels = 0.5,
+                col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
+      }
+
+      # Sagittal plane (Y vs Z)
+      sagittal <- t(vol_data[mid_x, , ])
+      image(y_coords, z_coords, sagittal, col = gray_pal,
+            main = paste(stage_title, "- Sagittal"), xlab = "Y (mm)", ylab = "Z (mm)")
+      if (!is.null(overlay_mask)) {
+        contour(y_coords, z_coords, t(overlay_mask[mid_x, , ]), levels = 0.5,
+                col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
+      }
+    }
+
+    # Row 1: Stage 1 - High-Res Canonical
+    render_stage_row(canonical_mask, canon_coords, canon_coords, canon_coords, "1. Canonical High-Res")
+    # Row 2: Stage 2 - Resampled Prior Mask
+    render_stage_row(initial_prior_mask, x_vox, y_vox, z_vox, "2. Resampled Prior")
+    # Row 3: Stage 3 - Intensity + Noise
+    render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "3. Intensity + Noise")
+    # Row 4: Stage 4 - Adapted Boundary Overlay on Intensity
+    render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "4. Adapted Boundary", overlay_mask = adapted_mask)
 
     dev.off()
   }
