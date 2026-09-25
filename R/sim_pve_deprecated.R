@@ -77,7 +77,7 @@
 #' @return A standard named list containing quantitative experimental metrics.
 #' 
 #' @export
-sim_pve <- function(shape = "sphere", params = list(r = 4.0), 
+sim_pve_deprecated <- function(shape = "sphere", params = list(r = 4.0), 
                     res_inplane = 1.0, res_z = 3.0, 
                     offset = c(0.0, 0.0, 0.0), rot_deg = c(0.0, 0.0, 0.0),
                     int_structure = 100, int_background = 50, noise_sd = 2.0,
