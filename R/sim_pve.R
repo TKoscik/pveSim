@@ -209,25 +209,31 @@ sim_pve <- function(shape = "sphere",
       mid_x <- round(length(x_coords) / 2)
       mid_y <- round(length(y_coords) / 2)
       mid_z <- round(length(z_coords) / 2)
+
       # 1. Axial plane (X vs Y)
       axial <- vol_data[, , mid_z]
-      image(x_coords, y_coords, axial, col = palette, zlim = zlim,
+      z_ax <- if (is.null(zlim)) range(axial, finite = TRUE) else zlim
+      image(x_coords, y_coords, axial, col = palette, zlim = z_ax,
             main = paste(stage_title, "- Axial"), xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
       if (!is.null(overlay_mask)) {
         contour(x_coords, y_coords, overlay_mask[, , mid_z], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
+
       # 2. Coronal plane (X vs Z)
       coronal <- vol_data[, mid_y, ]
-      image(x_coords, z_coords, coronal, col = palette, zlim = zlim,
+      z_cor <- if (is.null(zlim)) range(coronal, finite = TRUE) else zlim
+      image(x_coords, z_coords, coronal, col = palette, zlim = z_cor,
             main = paste(stage_title, "- Coronal"), xlab = "X (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
         contour(x_coords, z_coords, overlay_mask[, mid_y, ], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
+
       # 3. Sagittal plane (Y vs Z)
       sagittal <- vol_data[mid_x, , ]
-      image(y_coords, z_coords, sagittal, col = palette, zlim = zlim,
+      z_sag <- if (is.null(zlim)) range(sagittal, finite = TRUE) else zlim
+      image(y_coords, z_coords, sagittal, col = palette, zlim = z_sag,
             main = paste(stage_title, "- Sagittal"), xlab = "Y (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
         contour(y_coords, z_coords, overlay_mask[mid_x, , ], levels = 0.5,
