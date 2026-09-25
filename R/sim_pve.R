@@ -204,30 +204,30 @@ sim_pve <- function(shape = "sphere",
       mid_y <- round(length(y_coords) / 2)
       mid_z <- round(length(z_coords) / 2)
 
-      # Axial plane (X vs Y)
-      axial <- t(vol_data[, , mid_z])
+      # 1. Axial plane (X vs Y): vol_data[, , mid_z] is [Nx, Ny]
+      axial <- vol_data[, , mid_z]
       image(x_coords, y_coords, axial, col = gray_pal,
-            main = paste(stage_title, "- Axial"), xlab = "X (mm)", ylab = "Y (mm)")
+            main = paste(stage_title, "- Axial"), xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
       if (!is.null(overlay_mask)) {
-        contour(x_coords, y_coords, t(overlay_mask[, , mid_z]), levels = 0.5,
+        contour(x_coords, y_coords, overlay_mask[, , mid_z], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
 
-      # Coronal plane (X vs Z)
-      coronal <- t(vol_data[, mid_y, ])
+      # 2. Coronal plane (X vs Z): vol_data[, mid_y, ] is [Nx, Nz]
+      coronal <- vol_data[, mid_y, ]
       image(x_coords, z_coords, coronal, col = gray_pal,
             main = paste(stage_title, "- Coronal"), xlab = "X (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
-        contour(x_coords, z_coords, t(overlay_mask[, mid_y, ]), levels = 0.5,
+        contour(x_coords, z_coords, overlay_mask[, mid_y, ], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
 
-      # Sagittal plane (Y vs Z)
-      sagittal <- t(vol_data[mid_x, , ])
+      # 3. Sagittal plane (Y vs Z): vol_data[mid_x, , ] is [Ny, Nz]
+      sagittal <- vol_data[mid_x, , ]
       image(y_coords, z_coords, sagittal, col = gray_pal,
             main = paste(stage_title, "- Sagittal"), xlab = "Y (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
-        contour(y_coords, z_coords, t(overlay_mask[mid_x, , ]), levels = 0.5,
+        contour(y_coords, z_coords, overlay_mask[mid_x, , ], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
     }
