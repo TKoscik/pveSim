@@ -239,7 +239,7 @@ sim_pve <- function(shape = "sphere",
     # Row 3: Stage 3 - Intensity + Noise
     render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "3. Intensity + Noise")
     # Row 4: Stage 4 - Adapted Boundary Overlay on Intensity
-    render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "4. Adapted Boundary", overlay_mask = adapted_mask)
+    #render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "4. Adapted Boundary", overlay_mask = adapted_mask)
 
     dev.off()
   }
