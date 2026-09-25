@@ -182,44 +182,49 @@ sim_pve <- function(shape = "sphere",
   err_mixel <- ((v_mixel - v_true) / v_true) * 100
 
   # =========================================================================
-  # STEP 6: Multi-Stage Diagnostic Plots
+  # STEP 6: Multi-Stage Diagnostic Plots (4-Panel Pipeline View)
   # =========================================================================
   if (generate_plots) {
     mid_c <- round(n_canon / 2)
     mid_v <- round(n_vox / 2)
-    
-    # Orient slices correctly for R image coordinates
-    s1_slice <- t(canonical_mask[, , mid_c])
-    s2_slice <- t(initial_prior_mask[, , mid_v[3]])
-    s3_slice <- t(voxel_intensity_observed[, , mid_v[3]])
-    s4_mask  <- t(adapted_mask[, , mid_v[3]])
+
+    # 1. Calculate explicit canvas dimensions for 4 side-by-side square panels
+    panel_px <- 400
+    total_width <- panel_px * 4   # 1600 px wide
+    total_height <- panel_px + 80 # Extra vertical space for titles/labels
+
+    # 2. Extract and transpose 2D slices for R column-major mapping
+    s1 <- t(canonical_mask[, , mid_c])
+    s2 <- t(initial_prior_mask[, , mid_v[3]])
+    s3 <- t(voxel_intensity_observed[, , mid_v[3]])
+    s4 <- t(adapted_mask[, , mid_v[3]])
 
     gray_pal <- gray.colors(256, start = 0, end = 1)
 
-    png(filename = plot_filename, width = 1600, height = 450, res = 110)
+    # 3. Open PNG device with total width for ALL 4 panels
+    png(filename = plot_filename, width = total_width, height = total_height, res = 100)
+
+    # 4. Explicitly split device into 1 row, 4 columns BEFORE any plot calls
+    par(mfrow = c(1, 4), mar = c(4, 4, 3, 1), oma = c(0, 0, 0, 0), pty = "s")
+
+    # --- PANEL 1: Canonical Supersampled (0/1) ---
+    image(canon_coords, canon_coords, s1, col = gray_pal,
+          main = "1. Canonical High-Res", xlab = "X (mm)", ylab = "Y (mm)")
+
+    # --- PANEL 2: Resampled Prior Mask ---
+    image(x_vox, y_vox, s2, col = gray_pal,
+          main = "2. Resampled Prior", xlab = "X (mm)", ylab = "Y (mm)")
+
+    # --- PANEL 3: Observed Intensity + Thermal Noise ---
+    image(x_vox, y_vox, s3, col = gray_pal,
+          main = "3. Intensity + Noise", xlab = "X (mm)", ylab = "Y (mm)")
+
+    # --- PANEL 4: Adapted Boundary Overlay ---
+    image(x_vox, y_vox, s3, col = gray_pal,
+          main = "4. Adapted Boundary", xlab = "X (mm)", ylab = "Y (mm)")
     
-    # Lock layout explicitly to 1 row, 4 columns
-    layout(matrix(1:4, nrow = 1, ncol = 4))
-    par(mar = c(4, 4, 3, 1))
-
-    # Stage 1: High-Res Canonical
-    image(canon_coords, canon_coords, s1_slice, col = gray_pal,
-          main = "1. Canonical High-Res (0/1)", xlab = "X (mm)", ylab = "Y (mm)")
-
-    # Stage 2: Resampled Prior Mask
-    image(x_vox, y_vox, s2_slice, col = gray_pal,
-          main = "2. Resampled Prior Mask", xlab = "X (mm)", ylab = "Y (mm)")
-
-    # Stage 3: Simulated Intensity + Noise
-    image(x_vox, y_vox, s3_slice, col = gray_pal,
-          main = "3. Observed Intensity + Noise", xlab = "X (mm)", ylab = "Y (mm)")
-
-    # Stage 4: Adapted Boundary Overlay
-    image(x_vox, y_vox, s3_slice, col = gray_pal,
-          main = "4. Adapted Boundary Mask", xlab = "X (mm)", ylab = "Y (mm)")
-    
-    # Overlay contour on Panel 4 only
-    contour(x_vox, y_vox, s4_mask, levels = 0.5,
+    # Contour overlay on Panel 4 only (add = TRUE keeps it on the active 4th panel)
+    contour(x_vox, y_vox, s4, levels = 0.5,
             col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
 
     dev.off()
