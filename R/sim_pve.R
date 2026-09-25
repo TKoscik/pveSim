@@ -168,63 +168,66 @@ sim_pve <- function(shape = "sphere",
   adapted_mask[retraction_candidates] <- FALSE
 
   # =========================================================================
-  # STEP 5: Hard & Mixel Volume Calculations
+  # STEP 5: Hard & Mixel Volume Calculations (Contiguous Domain Masked)
   # =========================================================================
-  # Hard volume from locally adapted mask
+  # 1. Hard volume from locally adapted contiguous mask
   v_hard <- sum(adapted_mask) * voxel_vol_target
   err_hard <- ((v_hard - v_true) / v_true) * 100
 
-  # Linear mixel model volume estimated from intensity continuum
-  est_occupancy <- (voxel_intensity_observed - int_background) / (int_structure - int_background)
-  est_occupancy[est_occupancy < 0] <- 0.0
-  est_occupancy[est_occupancy > 1] <- 1.0
-  v_mixel <- sum(est_occupancy) * voxel_vol_target
+  # 2. Raw linear mixel occupancy estimated from observed intensities
+  raw_est_occupancy <- (voxel_intensity_observed - int_background) / (int_structure - int_background)
+  raw_est_occupancy[raw_est_occupancy < 0] <- 0.0
+  raw_est_occupancy[raw_est_occupancy > 1] <- 1.0
+
+  # 3. Define the spatial evaluation domain for mixels:
+  # Include the adapted contiguous structure mask + its 1-voxel 6-connected neighbor shell
+  nb_adapted <- get_6_neighbors(adapted_mask)
+  mixel_domain_mask <- nb_adapted$dilated  # Contiguous interior + contiguous boundary
+
+  # 4. Mask the occupancy map so distant/non-contiguous background voxels are strictly zeroed
+  mixel_occupancy_masked <- array(0.0, dim = n_vox)
+  mixel_occupancy_masked[mixel_domain_mask] <- raw_est_occupancy[mixel_domain_mask]
+
+  # 5. Calculate spatially restricted mixel volume
+  v_mixel <- sum(mixel_occupancy_masked) * voxel_vol_target
   err_mixel <- ((v_mixel - v_true) / v_true) * 100
 
   # =========================================================================
-  # STEP 6: Multi-Stage Diagnostic Plots (4 Rows x 3 Planes Layout)
+  # STEP 6: Multi-Stage Diagnostic Plots (5 Rows x 3 Planes Layout)
   # =========================================================================
   if (generate_plots) {
-    # Central slice indices
-    mid_c <- round(n_canon / 2)
-    mid_v <- round(n_vox / 2)
-    
     gray_pal <- gray.colors(256, start = 0, end = 1)
-
-    # 1200 x 1600 Canvas: 4 Rows (Stages) x 3 Columns (Axial, Coronal, Sagittal)
-    png(filename = plot_filename, width = 1200, height = 1600, res = 110)
-    
-    # 4 rows, 3 columns layout matrix
-    layout(matrix(1:12, nrow = 4, ncol = 3, byrow = TRUE))
+    heat_pal <- heat.colors(256, rev = TRUE) # Standard R heat palette (0=cool/yellow, 1=red/hot)
+    # 1200 x 2000 Canvas: 5 Rows (Stages) x 3 Columns (Axial, Coronal, Sagittal)
+    png(filename = plot_filename, width = 1200, height = 2000, res = 110)    
+    # 5 rows, 3 columns layout matrix
+    layout(matrix(1:15, nrow = 5, ncol = 3, byrow = TRUE))
     par(mar = c(3.5, 3.5, 2.5, 1.0), xaxs = "i", yaxs = "i")
-
     # Helper function to render a single 3-plane row for a given 3D matrix
-    render_stage_row <- function(vol_data, x_coords, y_coords, z_coords, stage_title, overlay_mask = NULL) {
+    render_stage_row <- function(vol_data, x_coords, y_coords, z_coords, stage_title, 
+                                 overlay_mask = NULL, palette = gray_pal, zlim = NULL) {
       mid_x <- round(length(x_coords) / 2)
       mid_y <- round(length(y_coords) / 2)
       mid_z <- round(length(z_coords) / 2)
-
-      # 1. Axial plane (X vs Y): vol_data[, , mid_z] is [Nx, Ny]
+      # 1. Axial plane (X vs Y)
       axial <- vol_data[, , mid_z]
-      image(x_coords, y_coords, axial, col = gray_pal,
+      image(x_coords, y_coords, axial, col = palette, zlim = zlim,
             main = paste(stage_title, "- Axial"), xlab = "X (mm)", ylab = "Y (mm)", asp = 1)
       if (!is.null(overlay_mask)) {
         contour(x_coords, y_coords, overlay_mask[, , mid_z], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
-
-      # 2. Coronal plane (X vs Z): vol_data[, mid_y, ] is [Nx, Nz]
+      # 2. Coronal plane (X vs Z)
       coronal <- vol_data[, mid_y, ]
-      image(x_coords, z_coords, coronal, col = gray_pal,
+      image(x_coords, z_coords, coronal, col = palette, zlim = zlim,
             main = paste(stage_title, "- Coronal"), xlab = "X (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
         contour(x_coords, z_coords, overlay_mask[, mid_y, ], levels = 0.5,
                 col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
       }
-
-      # 3. Sagittal plane (Y vs Z): vol_data[mid_x, , ] is [Ny, Nz]
+      # 3. Sagittal plane (Y vs Z)
       sagittal <- vol_data[mid_x, , ]
-      image(y_coords, z_coords, sagittal, col = gray_pal,
+      image(y_coords, z_coords, sagittal, col = palette, zlim = zlim,
             main = paste(stage_title, "- Sagittal"), xlab = "Y (mm)", ylab = "Z (mm)")
       if (!is.null(overlay_mask)) {
         contour(y_coords, z_coords, overlay_mask[mid_x, , ], levels = 0.5,
@@ -240,6 +243,9 @@ sim_pve <- function(shape = "sphere",
     render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "3. Intensity + Noise")
     # Row 4: Stage 4 - Adapted Boundary Overlay on Intensity
     render_stage_row(voxel_intensity_observed, x_vox, y_vox, z_vox, "4. Adapted Boundary", overlay_mask = adapted_mask)
+    # Row 5: Stage 5 - Mixel Occupancy Heatmap (Restricted to Contiguous Domain)
+    render_stage_row(mixel_occupancy_masked, x_vox, y_vox, z_vox, "5. Mixel Occupancy", 
+                     palette = heat_pal, zlim = c(0, 1))
 
     dev.off()
   }
