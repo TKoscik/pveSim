@@ -185,29 +185,46 @@ sim_pve <- function(shape = "sphere",
   # STEP 6: Multi-Stage Diagnostic Plots
   # =========================================================================
   if (generate_plots) {
+    # Extract 2D slices at the spatial midpoints
     mid_c <- round(n_canon / 2)
     mid_v <- round(n_vox / 2)
-    gray_pal <- gray.colors(256, 0, 1)
+    
+    # Slice matrices transposed so array dim 1 = X-axis and dim 2 = Y-axis
+    s1_slice <- t(canonical_mask[, , mid_c])
+    s2_slice <- t(initial_prior_mask[, , mid_v[3]])
+    s3_slice <- t(voxel_intensity_observed[, , mid_v[3]])
+    s4_mask  <- t(adapted_mask[, , mid_v[3]])
 
-    png(plot_filename, width = 1600, height = 400, res = 120)
-    par(mfrow = c(1, 4), mar = c(3, 3, 3, 1))
+    gray_pal <- gray.colors(256, start = 0, end = 1)
 
-    # Stage 1: High-res Canonical
-    image(canon_coords, canon_coords, canonical_mask[,,mid_c], col = gray_pal,
-          main = "1. Canonical High-Res (0/1)", xlab = "X", ylab = "Y", asp = 1)
+    # Open graphic device explicitly
+    png(filename = plot_filename, width = 1600, height = 450, res = 110)
+    
+    # Configure 1x4 panel grid layout with tight margins
+    par(mfrow = c(1, 4), mar = c(4, 4, 3, 1), oma = c(0, 0, 0, 0))
 
-    # Stage 2: Resampled Prior
-    image(x_vox, y_vox, initial_prior_mask[,,mid_v[3]], col = gray_pal,
-          main = "2. Resampled Prior Mask", xlab = "X", ylab = "Y", asp = 1)
+    # Stage 1: High-Res Canonical
+    image(canon_coords, canon_coords, s1_slice, col = gray_pal,
+          main = "1. Canonical High-Res (0/1)", xlab = "X (mm)", ylab = "Y (mm)", 
+          useRaster = TRUE, asp = 1)
+
+    # Stage 2: Resampled Prior Mask
+    image(x_vox, y_vox, s2_slice, col = gray_pal,
+          main = "2. Resampled Prior Mask", xlab = "X (mm)", ylab = "Y (mm)", 
+          useRaster = TRUE, asp = 1)
 
     # Stage 3: Simulated Intensity + Noise
-    image(x_vox, y_vox, voxel_intensity_observed[,,mid_v[3]], col = gray_pal,
-          main = "3. Observed Intensity + Noise", xlab = "X", ylab = "Y", asp = 1)
+    image(x_vox, y_vox, s3_slice, col = gray_pal,
+          main = "3. Observed Intensity + Noise", xlab = "X (mm)", ylab = "Y (mm)", 
+          useRaster = TRUE, asp = 1)
 
-    # Stage 4/5: Adapted Segmentation Overlay
-    image(x_vox, y_vox, voxel_intensity_observed[,,mid_v[3]], col = gray_pal,
-          main = "4. Adapted Boundary Mask", xlab = "X", ylab = "Y", asp = 1)
-    contour(x_vox, y_vox, adapted_mask[,,mid_v[3]], levels = 0.5,
+    # Stage 4: Adapted Boundary Overlay
+    image(x_vox, y_vox, s3_slice, col = gray_pal,
+          main = "4. Adapted Boundary Mask", xlab = "X (mm)", ylab = "Y (mm)", 
+          useRaster = TRUE, asp = 1)
+    
+    # Add contour overlay directly onto Panel 4
+    contour(x_vox, y_vox, s4_mask, levels = 0.5,
             col = "red", lwd = 2, add = TRUE, drawlabels = FALSE)
 
     dev.off()
