@@ -95,7 +95,7 @@ sim_pve <- function(shape = "sphere", params = list(r = 4.0),
   buffer <- max(c(res_inplane, res_z)) * 4
   if (shape == "sphere") { max_dim <- params$r * 2
   } else if (shape == "ellipsoid") { max_dim <- max(params$a, params$b, params$c) * 2
-  } else if (shape == "cylinder") { max_dim <- sqrt((2 * params$r)^2 + (params$h)^2)
+  } else if (shape == "cylinder") { max_dim <- sqrt((2 * params$r)^2 + (params$h)^2) *2
   } else if (shape == "ovoid") { max_dim <- max(params$a, params$b, params$c) * 2
   } else if (shape == "irregular") { max_dim <- (params$base_r + params$amp1 + params$amp2) * 2
   } else if (shape == "laminar") { max_dim <- max(c(params$thickness, params$curve_amp * 2)) * 2
